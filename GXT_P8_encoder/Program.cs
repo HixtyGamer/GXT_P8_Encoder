@@ -13,14 +13,14 @@ namespace GXT_P8_encoder
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Путь к RAW файлу");
+            Console.WriteLine("Path to Photoshop RAW image");
             string path = Console.ReadLine();
             byte[] image = File.ReadAllBytes(path);
-            Console.WriteLine("Путь к оригинальному GXT файлу");
+            Console.WriteLine("Path to original GXT image");
             string pathGXT = Console.ReadLine();
-            Console.WriteLine("Путь к будущему GXT файлу");
+            Console.WriteLine("Path to save re-encrypted GXT image");
             string pathEnd = Console.ReadLine();
-            Console.WriteLine("Ну жди теперь...");
+            Console.WriteLine("Processing...");
             using (FileStream fstream = new FileStream(pathGXT, FileMode.Open))
             {
                 byte[] header = new byte[64];
@@ -92,7 +92,7 @@ namespace GXT_P8_encoder
                     full[full.Length - 1024 + k] = palette[k];
                 File.WriteAllBytes(pathEnd, full);
             }
-            Console.WriteLine("Вроде как всё");
+            Console.WriteLine("Done");
             Console.ReadKey();
         }
     }
