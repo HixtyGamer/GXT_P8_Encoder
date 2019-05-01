@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GXT_P8_encoder", "GXT_P8_encoder\GXT_P8_encoder.csproj", "{2E5798CC-7D9E-4E9F-9971-EE9668C7226F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2E5798CC-7D9E-4E9F-9971-EE9668C7226F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E5798CC-7D9E-4E9F-9971-EE9668C7226F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E5798CC-7D9E-4E9F-9971-EE9668C7226F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E5798CC-7D9E-4E9F-9971-EE9668C7226F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E990692-769E-4DAE-83FC-F0C4D8525F8D}
+	EndGlobalSection
+EndGlobal
