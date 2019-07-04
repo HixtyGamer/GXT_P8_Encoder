@@ -9,10 +9,9 @@ namespace GXT_P8_encoder
 {
     class Program
     {
-
-
         static void Main(string[] args)
         {
+            start:
             Console.WriteLine("Path to Photoshop RAW image");
             string path = Console.ReadLine();
             byte[] image = File.ReadAllBytes(path);
@@ -62,7 +61,7 @@ namespace GXT_P8_encoder
                         {
                             for (int o = 0; o < 256; o++)
                             {
-                                if (paletteARGB[o, 0] == 0)
+                                if (paletteARGB[o, 0] <= 2)
                                 {
                                     num = o;
                                     break;
@@ -94,6 +93,7 @@ namespace GXT_P8_encoder
             }
             Console.WriteLine("Done");
             Console.ReadKey();
+            goto start;
         }
     }
 }
