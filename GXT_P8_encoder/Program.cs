@@ -11,10 +11,9 @@ namespace GXT_P8_encoder
     {
         static void Main(string[] args)
         {
-            start:
+        start:
             Console.WriteLine("Path to Photoshop RAW image");
-            string path = Console.ReadLine();
-            byte[] image = File.ReadAllBytes(path);
+            string path = Console.ReadLine();           
             Console.WriteLine("Path to original GXT image");
             string pathGXT = Console.ReadLine();
             Console.WriteLine("Path to save re-encrypted GXT image");
@@ -22,82 +21,76 @@ namespace GXT_P8_encoder
             Console.WriteLine("Generate palette? (1 or 0)");
             string palette_ch = Console.ReadLine();
             Console.WriteLine("Processing...");
+            byte[] image = File.ReadAllBytes(path);
             using (FileStream fstream = new FileStream(pathGXT, FileMode.Open))
             {
                 byte[] header = new byte[64];
-                byte[] palette = new byte[1024];                
+                byte[] palette = new byte[1024];
                 byte[] full = new byte[fstream.Length];
                 byte[,] paletteARGB = new byte[256, 4];
                 fstream.Read(header, 0, 64);
                 int r = 0;
                 if (palette_ch == Convert.ToString(1))
                 {
-
-                    byte[,] palette_gen = new byte[16000000, 4];
-                    int[] palette_count = new int[16000000];
-                    for (int n = 0; n < image.Length; n+=4 )
+                    List<List<byte>> palette_gen = new List<List<byte>>();
+                    List<int> palette_count = new List<int>();
+                    for (int n = 0; n < image.Length; n += 4)
                     {
-
-                        byte Rp = image[n];
-                        byte Gp = image[n + 1];
-                        byte Bp = image[n + 2];
-                        byte Ap = image[n + 3];
-                        int count = 0;
-                        bool check = false;
-
-                        if (n % 1000 == 0 || n == image.Length-1)
-                            Console.WriteLine("{0} of {1}", n, image.Length-1);
-                        for (int x = 0; x < n/4; x++)
+                        List<byte> color = new List<byte>();
+                        color.Add(image[n]);
+                        color.Add(image[n + 1]);
+                        color.Add(image[n + 2]);
+                        color.Add(image[n + 3]);
+                        if (n % 1000 == 0 || n == image.Length - 4)
+                            Console.WriteLine("{0} of {1}", n, image.Length - 4);
+                        for (int x = 0; x < palette_gen.Count + 1; x++)
                         {
-                            if (Rp == palette_gen[x,0] && Gp == palette_gen[x,1] && Bp == palette_gen[x,2] && Ap == palette_gen[x,3])
+                            try
                             {
-                                check = true;
+                                if (color[0] == palette_gen[x][0] && color[1] == palette_gen[x][1] && color[2] == palette_gen[x][2] && color[3] == palette_gen[x][3])
+                                {
+                                    palette_count[x]++;
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+                                palette_gen.Add(color);
+                                palette_count.Add(1);
                                 break;
                             }
-                            if (palette_count[x] == 0) break;
                         }
-                        if (check) continue;
-                        for (int y = 0; y < image.Length; y += 4)
-                        {
-                            if  (Rp == image[y] && Gp == image[y+1] && Bp == image[y+2] && Ap == image[y + 3])
-                            {
-                                count++;
-                            }
-                        }
-                        for (int z = 0; z <= n/4; z++)
-                        {
-                            if (count > palette_count[z])
-                            {
-                                byte[] save = new byte[4];
-                                int cnt_sv = 0;
-                                save[0] = palette_gen[z,0];
-                                save[1] = palette_gen[z, 1];
-                                save[2] = palette_gen[z, 2];
-                                save[3] = palette_gen[z, 3];
-                                cnt_sv = palette_count[z];
-                                palette_gen[z, 0] = Rp;
-                                palette_gen[z, 1] = Gp;
-                                palette_gen[z, 2] = Bp;
-                                palette_gen[z, 3] = Ap;
-                                palette_count[z] = count;
-                                Rp = save[0];
-                                Gp = save[1];
-                                Bp = save[2];
-                                Ap = save[3];
-                                count = cnt_sv;
-                            }
-                            if (count == 0) break; 
-                        }
-                        
+                    }
+                    for (int z = 0; z < 256; z++)
+                    {
+                        int index = z;
+                        for (int m = z + 1; m < palette_gen.Count; m++)
+                            if (palette_count[m] > palette_count[index]) index = m;
+                        byte[] save = new byte[4];
+                        int cnt_sv = 0;
+                        save[0] = palette_gen[z][0];
+                        save[1] = palette_gen[z][1];
+                        save[2] = palette_gen[z][2];
+                        save[3] = palette_gen[z][3];
+                        cnt_sv = palette_count[z];
+                        palette_gen[z][0] = palette_gen[index][0];
+                        palette_gen[z][1] = palette_gen[index][1];
+                        palette_gen[z][2] = palette_gen[index][2];
+                        palette_gen[z][3] = palette_gen[index][3];
+                        palette_count[z] = palette_count[index];
+                        palette_gen[index][0] = save[0];
+                        palette_gen[index][1] = save[1];
+                        palette_gen[index][2] = save[2];
+                        palette_gen[index][3] = save[3];
+                        palette_count[index] = cnt_sv;
                     }
                     for (int x = 0; x < 256; x++)
                     {
-                        palette[x * 4] = Convert.ToByte(palette_gen[x, 2]);
-                        palette[x * 4 + 1] = Convert.ToByte(palette_gen[x, 1]);
-                        palette[x * 4 + 2] = Convert.ToByte(palette_gen[x, 0]);
-                        palette[x * 4 + 3] = Convert.ToByte(palette_gen[x, 3]);
+                        palette[x * 4] = Convert.ToByte(palette_gen[x][2]);
+                        palette[x * 4 + 1] = Convert.ToByte(palette_gen[x][1]);
+                        palette[x * 4 + 2] = Convert.ToByte(palette_gen[x][0]);
+                        palette[x * 4 + 3] = Convert.ToByte(palette_gen[x][3]);
                     }
-      
                     Console.WriteLine("Palette generated.");
                     Console.WriteLine("Still processing...");
                 }
@@ -106,9 +99,7 @@ namespace GXT_P8_encoder
                     fstream.Seek(-1024, SeekOrigin.End);
                     fstream.Read(palette, 0, 1024);
                 }
-
                 for (int n = 0; n < 64; n++) full[n] = header[n];
-
                 for (int n = 0; n < 256; n++)
                 {
                     for (int v = 3; v >= 0; v--)
@@ -117,7 +108,6 @@ namespace GXT_P8_encoder
                         r++;
                     }
                 }
-
                 for (int n = 0; n < (fstream.Length - 1088) * 4; n += 4)
                 {
                     bool check = true;
@@ -127,7 +117,6 @@ namespace GXT_P8_encoder
                             full[n / 4 + 64] = (byte)v;
                             check = false;
                         }
-
                     int R, G, B, A;
                     int num = 0, ch = 1024;
 
@@ -142,7 +131,6 @@ namespace GXT_P8_encoder
                                     num = o;
                                     break;
                                 }
-                                
                             }
                         }
                         else
@@ -157,9 +145,7 @@ namespace GXT_P8_encoder
                                     ch = R + G + B + A;
                                     num = o;
                                 }
-                            }
-                        // Console.WriteLine("Произошла замена: {0} {1} {2} {3} на {4} {5} {6} {7}", image[n], image[n + 1], image[n + 2], image[n + 3], paletteARGB[num, 1], paletteARGB[num, 2], paletteARGB[num, 3], paletteARGB[num, 0]);
-                        
+                            }                      
                         full[n / 4 + 64] = (byte)num;
                     }
                 }
