@@ -30,10 +30,12 @@ namespace GXT_P8_encoder
                 byte[,] paletteARGB = new byte[256, 4];
                 fstream.Read(header, 0, 64);
                 int r = 0;
+                int progress = 0;
                 if (palette_ch == Convert.ToString(1))
                 {
+                    Console.WriteLine("Creating new palette...");
                     List<List<byte>> palette_gen = new List<List<byte>>();
-                    List<int> palette_count = new List<int>();
+                    List<int> palette_count = new List<int>();                   
                     for (int n = 0; n < image.Length; n += 4)
                     {
                         List<byte> color = new List<byte>();
@@ -41,8 +43,11 @@ namespace GXT_P8_encoder
                         color.Add(image[n + 1]);
                         color.Add(image[n + 2]);
                         color.Add(image[n + 3]);
-                        if (n % 1000 == 0 || n == image.Length - 4)
-                            Console.WriteLine("{0} of {1}", n, image.Length - 4);
+                        if (n * 100 / image.Length != progress)
+                        {
+                            progress++;
+                            Console.WriteLine("{0}% done", progress);
+                        }
                         for (int x = 0; x < palette_gen.Count + 1; x++)
                         {
                             try
@@ -50,6 +55,28 @@ namespace GXT_P8_encoder
                                 if (color[0] == palette_gen[x][0] && color[1] == palette_gen[x][1] && color[2] == palette_gen[x][2] && color[3] == palette_gen[x][3])
                                 {
                                     palette_count[x]++;
+                                    for (int s = 0;s < x; s++)
+                                        if (palette_count[x] > palette_count[s])
+                                        {
+                                            byte[] save = new byte[4];
+                                            int cnt_sv = 0;
+                                            save[0] = palette_gen[x][0];
+                                            save[1] = palette_gen[x][1];
+                                            save[2] = palette_gen[x][2];
+                                            save[3] = palette_gen[x][3];
+                                            cnt_sv = palette_count[x];
+                                            palette_gen[x][0] = palette_gen[s][0];
+                                            palette_gen[x][1] = palette_gen[s][1];
+                                            palette_gen[x][2] = palette_gen[s][2];
+                                            palette_gen[x][3] = palette_gen[s][3];
+                                            palette_count[x] = palette_count[s];
+                                            palette_gen[s][0] = save[0];
+                                            palette_gen[s][1] = save[1];
+                                            palette_gen[s][2] = save[2];
+                                            palette_gen[s][3] = save[3];
+                                            palette_count[s] = cnt_sv;
+                                            break;
+                                        }
                                     break;
                                 }
                             }
@@ -61,29 +88,6 @@ namespace GXT_P8_encoder
                             }
                         }
                     }
-                    for (int z = 0; z < 256; z++)
-                    {
-                        int index = z;
-                        for (int m = z + 1; m < palette_gen.Count; m++)
-                            if (palette_count[m] > palette_count[index]) index = m;
-                        byte[] save = new byte[4];
-                        int cnt_sv = 0;
-                        save[0] = palette_gen[z][0];
-                        save[1] = palette_gen[z][1];
-                        save[2] = palette_gen[z][2];
-                        save[3] = palette_gen[z][3];
-                        cnt_sv = palette_count[z];
-                        palette_gen[z][0] = palette_gen[index][0];
-                        palette_gen[z][1] = palette_gen[index][1];
-                        palette_gen[z][2] = palette_gen[index][2];
-                        palette_gen[z][3] = palette_gen[index][3];
-                        palette_count[z] = palette_count[index];
-                        palette_gen[index][0] = save[0];
-                        palette_gen[index][1] = save[1];
-                        palette_gen[index][2] = save[2];
-                        palette_gen[index][3] = save[3];
-                        palette_count[index] = cnt_sv;
-                    }
                     for (int x = 0; x < 256; x++)
                     {
                         palette[x * 4] = Convert.ToByte(palette_gen[x][2]);
@@ -91,8 +95,8 @@ namespace GXT_P8_encoder
                         palette[x * 4 + 2] = Convert.ToByte(palette_gen[x][0]);
                         palette[x * 4 + 3] = Convert.ToByte(palette_gen[x][3]);
                     }
-                    Console.WriteLine("Palette generated.");
-                    Console.WriteLine("Still processing...");
+                    Console.WriteLine("Palette created.");
+                    Console.WriteLine("Applying palette to image...");
                 }
                 else
                 {
@@ -108,8 +112,14 @@ namespace GXT_P8_encoder
                         r++;
                     }
                 }
+                progress = 0;
                 for (int n = 0; n < (fstream.Length - 1088) * 4; n += 4)
                 {
+                    if (n * 100 / ((fstream.Length - 1088) * 4) != progress)
+                    {
+                        progress++;
+                        Console.WriteLine("{0}% done", progress);
+                    }
                     bool check = true;
                     for (int v = 0; v < 256; v++)
                         if (image[n] == paletteARGB[v, 1] && image[n + 1] == paletteARGB[v, 2] && image[n + 2] == paletteARGB[v, 3] && image[n + 3] == paletteARGB[v, 0])
